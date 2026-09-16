@@ -1,0 +1,77 @@
+/* ==========================================================================
+   Motion layer: reveal states, ambient keyframes, and graceful fallbacks.
+   main.css hides things that the intro is responsible for revealing, so every
+   one of those hidden states needs an escape hatch here.
+   ========================================================================== */
+
+/* ---------------- no JavaScript: skip the whole cinematic layer ---------------- */
+
+html:not(.js) #portrait-stage,
+html:not(.js) #intro-copy,
+html:not(.js) #skip-intro,
+html:not(.js) #particle-canvas,
+html:not(.js) #wave-canvas,
+html:not(.js) .cursor { display: none; }
+
+html:not(.js) #site,
+html:not(.js) .nav,
+html:not(.js) #hero-portrait,
+html:not(.js) .hero__scroll,
+html:not(.js) .hero__aside,
+html:not(.js) .hero__portrait-slot .slot__ring,
+html:not(.js) .hero__portrait-slot .slot__glow { opacity: 1; }
+
+html:not(.js) body.is-loading { overflow: visible; height: auto; }
+html:not(.js) .timeline__progress { transform: scaleY(1); }
+
+/* ------------------------------ reveal states ------------------------------ */
+
+html.js [data-reveal] { opacity: 0; transform: translateY(26px); }
+html.js .pill { opacity: 0; transform: translateY(14px); }
+html.js .entry { opacity: 0; transform: translateY(30px); }
+
+/* ---------------------------- ambient keyframes ---------------------------- */
+
+@keyframes ring-drift {
+  to { transform: rotate(360deg); }
+}
+.slot__ring, .stage__ring { animation: ring-drift 26s linear infinite; }
+
+@keyframes core-breathe {
+  0%, 100% { opacity: .5; }
+  50%      { opacity: .85; }
+}
+.slot__glow { animation: core-breathe 7s ease-in-out infinite; }
+
+@keyframes scroll-hint {
+  0%, 100% { transform: translateY(0); opacity: .6; }
+  50%      { transform: translateY(4px); opacity: 1; }
+}
+.hero__scroll i { animation: scroll-hint 2.6s ease-in-out infinite; }
+
+/* The portrait's particle → photo hand-off. --reveal is driven by GSAP:
+   a soft radial window opens outward while the blur resolves. */
+#portrait-image {
+  --reveal: 0;
+  -webkit-mask-image: radial-gradient(circle at 50% 46%,
+    #000 calc(var(--reveal) * 1%), transparent calc(var(--reveal) * 1% + 22%));
+  mask-image: radial-gradient(circle at 50% 46%,
+    #000 calc(var(--reveal) * 1%), transparent calc(var(--reveal) * 1% + 22%));
+}
+
+/* ----------------------------- reduced motion ----------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .12s !important;
+    scroll-behavior: auto !important;
+  }
+  html.js [data-reveal],
+  html.js .pill,
+  html.js .entry { opacity: 1; transform: none; }
+  #wave-canvas, #particle-canvas { opacity: .35; }
+  .atmosphere__grain { display: none; }
+  .timeline__progress { transform: scaleY(1); }
+}

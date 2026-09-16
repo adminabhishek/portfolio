@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ c.name }} — {{ c.brand }}</title>
+<meta name="description" content="{{ c.description }}">
+<meta name="theme-color" content="#04060c">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@200;300;400;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/animations.css') }}">
+<link rel="preload" as="image" href="{{ url_for('static', filename=profile) }}">
+</head>
+
+<body class="is-loading">
+
+<!-- ============ ambient layers ============ -->
+<canvas id="wave-canvas" aria-hidden="true"></canvas>
+<canvas id="particle-canvas" aria-hidden="true"></canvas>
+<div class="atmosphere" aria-hidden="true">
+  <div class="atmosphere__grid"></div>
+  <div class="atmosphere__core" id="intro-core"></div>
+  <div class="atmosphere__vignette"></div>
+  <div class="atmosphere__grain"></div>
+</div>
+
+<!-- ============ the travelling portrait ============ -->
+<!-- One element. It forms in the centre during the intro, then flies into the
+     hero slot. The hero's own <img> only takes over once they overlap exactly. -->
+<div id="portrait-stage" aria-hidden="true">
+  <div class="stage__ring"></div>
+  <div class="stage__glow"></div>
+  <figure class="stage__frame">
+    <img id="portrait-image" src="{{ url_for('static', filename=profile) }}" alt="">
+  </figure>
+</div>
+
+<!-- ============ intro typography ============ -->
+<div id="intro-copy">
+  <h1 class="intro__name" aria-hidden="true">
+    <span class="line"><span class="line__inner">Abhishek</span></span>
+    <span class="line"><span class="line__inner">Maurya</span></span>
+  </h1>
+  <p class="intro__brand" aria-hidden="true">
+    {% for word in c.mantra %}<span>{{ word }}</span>{% if not loop.last %}<i>•</i>{% endif %}{% endfor %}
+  </p>
+</div>
+
+<button id="skip-intro" type="button">Skip intro</button>
+
+<!-- ============ site ============ -->
+<div id="site">
+
+<header class="nav" id="nav">
+  <a class="nav__logo" href="#home" aria-label="{{ c.name }} — home">
+    <span class="nav__mark">{{ c.initials }}</span>
+    <span class="nav__name">{{ c.name }}</span>
+  </a>
+
+  <nav class="nav__links" aria-label="Sections">
+    <span class="nav__indicator" aria-hidden="true"></span>
+    {% for item in c.nav %}
+    <a href="#{{ item|lower }}" data-nav="{{ item|lower }}"{% if loop.first %} class="is-active"{% endif %}>{{ item }}</a>
+    {% endfor %}
+  </nav>
+
+  <a class="btn btn--ghost nav__cta" data-magnetic href="#contact">
+    Let's Connect <i data-lucide="arrow-up-right"></i>
+  </a>
+
+  <button class="nav__burger" id="nav-burger" aria-label="Open menu" aria-expanded="false">
+    <span></span><span></span>
+  </button>
+</header>
+
+<main>
+
+<!-- ---------------- HERO ---------------- -->
+<section class="hero" id="home">
+  <div class="hero__text">
+    <p class="hero__eyebrow"><i data-lucide="sparkle"></i> {{ c.brand }}</p>
+
+    <h2 class="hero__title">
+      <span class="hero__hi">Hi, I'm</span>
+      <span class="hero__first">Abhishek</span>
+      <span class="hero__last">Maurya</span>
+    </h2>
+
+    <p class="hero__role">{{ c.role }}</p>
+    <p class="hero__desc">{{ c.description }}</p>
+
+    <div class="hero__actions">
+      <a class="btn btn--solid" data-magnetic href="#projects">View My Work <i data-lucide="arrow-right"></i></a>
+      <a class="btn btn--ghost" data-magnetic href="{{ url_for('resume') }}">Download Resume <i data-lucide="download"></i></a>
+    </div>
+
+    <ul class="hero__socials">
+      {% for s in c.socials %}
+      <li><a href="{{ s.url }}" aria-label="{{ s.label }}" target="_blank" rel="noopener"><i data-lucide="{{ s.icon }}"></i></a></li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <div class="hero__visual">
+    <div class="hero__portrait-slot" id="hero-slot">
+      <div class="slot__ring" aria-hidden="true"></div>
+      <div class="slot__glow" aria-hidden="true"></div>
+      <figure class="slot__frame">
+        <img id="hero-portrait" src="{{ url_for('static', filename=profile) }}"
+             alt="Portrait of {{ c.name }}">
+      </figure>
+    </div>
+    <p class="hero__aside" aria-hidden="true">Same student.<br>Bigger dreams.</p>
+  </div>
+
+  <a class="hero__scroll" href="#about">
+    <span>Scroll to explore</span>
+    <i data-lucide="mouse"></i>
+  </a>
+</section>
+
+<!-- ---------------- ABOUT ---------------- -->
+<section class="section section--about" id="about">
+  <p class="section__label" data-reveal>01 / About</p>
+  <h3 class="section__title" data-reveal>More Than Just a Student</h3>
+
+  <div class="about__grid">
+    <div class="about__prose">
+      {% for p in c.about.paragraphs %}<p data-reveal>{{ p }}</p>{% endfor %}
+
+      <dl class="about__facts" data-reveal>
+        <div>
+          <dt><i data-lucide="map-pin"></i> Based in</dt>
+          <dd>{{ c.location }}</dd>
+        </div>
+        <div>
+          <dt><i data-lucide="graduation-cap"></i> Studying</dt>
+          <dd>{{ c.education }}</dd>
+        </div>
+      </dl>
+
+      <div class="about__interests" data-reveal>
+        <span class="about__interests-label">Interested in</span>
+        <ul>{% for i in c.about.interests %}<li>{{ i }}</li>{% endfor %}</ul>
+      </div>
+    </div>
+
+    <ul class="stats" id="stats">
+      {% for s in c.about.stats %}
+      <li class="stat" data-reveal>
+        {% if s.value %}
+        <span class="stat__value" data-count="{{ s.value }}" data-suffix="{{ s.suffix }}">0{{ s.suffix }}</span>
+        {% else %}
+        <span class="stat__value stat__value--symbol">{{ s.symbol }}</span>
+        {% endif %}
+        <span class="stat__label">{{ s.label }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+
+<!-- ---------------- SKILLS ---------------- -->
+<section class="section section--skills" id="skills">
+  <p class="section__label" data-reveal>02 / Skills</p>
+  <h3 class="section__title" data-reveal>Tools &amp; Technologies</h3>
+
+  <div class="skills">
+    {% for group in c.skills %}
+    <div class="skills__group" data-skill-group>
+      <h4 class="skills__group-name" data-reveal>{{ group.group }}</h4>
+      <ul class="skills__list">
+        {% for item in group.tech %}
+        <li class="pill" data-pill>
+          <i data-lucide="{{ item.icon }}"></i><span>{{ item.name }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- ---------------- PROJECTS ---------------- -->
+<section class="section section--projects" id="projects">
+  <p class="section__label" data-reveal>03 / Projects</p>
+  <h3 class="section__title" data-reveal>Things I've Built</h3>
+
+  <div class="projects">
+    {% for p in c.projects %}
+    <article class="project" data-tilt>
+      <div class="project__index">{{ '%02d'|format(loop.index) }}</div>
+      <div class="project__body">
+        <h4 class="project__name">{{ p.name }}</h4>
+        <p class="project__tagline">{{ p.tagline }}</p>
+        <p class="project__detail">{{ p.detail }}</p>
+        <ul class="project__tech">{% for t in p.tech %}<li>{{ t }}</li>{% endfor %}</ul>
+      </div>
+      <a class="project__link" href="{{ p.url }}" aria-label="Open {{ p.name }}">
+        <i data-lucide="arrow-up-right"></i>
+      </a>
+      <span class="project__sheen" aria-hidden="true"></span>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- ---------------- EXPERIENCE ---------------- -->
+<section class="section section--journey" id="experience">
+  <p class="section__label" data-reveal>04 / Experience</p>
+  <h3 class="section__title" data-reveal>My Journey</h3>
+
+  <ol class="timeline" id="timeline">
+    <span class="timeline__track" aria-hidden="true"><i class="timeline__progress"></i></span>
+    {% for j in c.journey %}
+    <li class="entry" data-entry>
+      <span class="entry__node" aria-hidden="true"></span>
+      <p class="entry__period">{{ j.period }}</p>
+      <h4 class="entry__title">{{ j.title }}</h4>
+      <p class="entry__org">{{ j.org }} <span class="entry__kind">{{ j.kind }}</span></p>
+      <p class="entry__detail">{{ j.detail }}</p>
+    </li>
+    {% endfor %}
+  </ol>
+</section>
+
+<!-- ---------------- CONTACT ---------------- -->
+<section class="section section--contact" id="contact">
+  <div class="contact__horizon" aria-hidden="true">
+    <svg viewBox="0 0 1440 320" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0 260 L180 190 L280 232 L430 120 L560 208 L700 150 L820 222 L980 130 L1120 210 L1260 168 L1440 240 L1440 320 L0 320 Z"/>
+      <path class="contact__ridge-2" d="M0 296 L220 250 L360 282 L520 226 L680 272 L860 236 L1040 280 L1220 244 L1440 286 L1440 320 L0 320 Z"/>
+    </svg>
+  </div>
+
+  <p class="section__label" data-reveal>05 / Contact</p>
+  <h3 class="contact__heading" data-reveal>{{ c.contact.heading }}</h3>
+  <p class="contact__desc" data-reveal>{{ c.contact.description }}</p>
+
+  <a class="btn btn--solid btn--lg" data-magnetic href="mailto:{{ c.email }}">
+    {{ c.contact.cta }} <i data-lucide="send"></i>
+  </a>
+
+  <ul class="contact__socials" data-reveal>
+    {% for s in c.socials %}
+    <li><a href="{{ s.url }}" target="_blank" rel="noopener"><i data-lucide="{{ s.icon }}"></i> {{ s.label }}</a></li>
+    {% endfor %}
+  </ul>
+
+  <p class="contact__closing" aria-hidden="true">Ideas today. Impact tomorrow.</p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="footer__brand">
+    <span class="footer__name">{{ c.name }}</span>
+    <span class="footer__line">Building ideas. Creating impact.</span>
+  </div>
+  <nav class="footer__nav" aria-label="Footer">
+    {% for item in c.nav %}<a href="#{{ item|lower }}">{{ item }}</a>{% endfor %}
+  </nav>
+  <ul class="footer__socials">
+    {% for s in c.socials %}
+    <li><a href="{{ s.url }}" aria-label="{{ s.label }}" target="_blank" rel="noopener"><i data-lucide="{{ s.icon }}"></i></a></li>
+    {% endfor %}
+  </ul>
+  <p class="footer__copy">© <span id="year">2026</span> {{ c.name }}</p>
+</footer>
+
+</div><!-- /#site -->
+
+<div class="cursor" id="cursor" aria-hidden="true">
+  <span class="cursor__ring"></span>
+  <span class="cursor__dot"></span>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.18/dist/lenis.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+
+<script src="{{ url_for('static', filename='js/utils.js') }}"></script>
+<script src="{{ url_for('static', filename='js/particles.js') }}"></script>
+<script src="{{ url_for('static', filename='js/wave.js') }}"></script>
+<script src="{{ url_for('static', filename='js/loading.js') }}"></script>
+<script src="{{ url_for('static', filename='js/scroll.js') }}"></script>
+<script src="{{ url_for('static', filename='js/cursor.js') }}"></script>
+<script src="{{ url_for('static', filename='js/interactions.js') }}"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
